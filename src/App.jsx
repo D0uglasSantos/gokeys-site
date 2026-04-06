@@ -46,26 +46,45 @@ export default function App() {
       // Scroll-controlled video
       const video = scrollVideoRef.current;
       const section = scrollVideoSectionRef.current;
+      
       if (video && section) {
-        video.pause();
-        video.currentTime = 0;
-
-        const duration = video.duration || 8;
-        const scrollLength = window.innerHeight * 5;
-
-        ScrollTrigger.create({
-          trigger: section,
-          start: 'top top',
-          end: `+=${scrollLength}`,
-          pin: true,
-          scrub: 0.1,
-          onUpdate: (self) => {
-            const targetTime = self.progress * duration;
-            if (Math.abs(video.currentTime - targetTime) > 0.05) {
-              video.currentTime = targetTime;
+        const setupVideoScroll = () => {
+          ctx.add(() => {
+            video.pause();
+            try {
+              video.currentTime = 0;
+            } catch (e) {
+              console.warn("Video currentTime set failed", e);
             }
-          },
-        });
+
+            const duration = video.duration || 8;
+            const scrollLength = window.innerHeight * 5;
+
+            ScrollTrigger.create({
+              trigger: section,
+              start: 'top top',
+              end: `+=${scrollLength}`,
+              pin: true,
+              scrub: 0.1,
+              onUpdate: (self) => {
+                const targetTime = self.progress * duration;
+                if (Math.abs(video.currentTime - targetTime) > 0.05) {
+                  try {
+                    video.currentTime = targetTime;
+                  } catch {
+                    // ignore
+                  }
+                }
+              },
+            });
+          });
+        };
+
+        if (video.readyState >= 1) {
+          setupVideoScroll();
+        } else {
+          video.addEventListener('loadedmetadata', setupVideoScroll);
+        }
       }
 
       // Parallax on the divider image
