@@ -11,6 +11,10 @@ export default function App() {
   const scrollVideoSectionRef = useRef(null);
 
   useEffect(() => {
+    // Força a página a iniciar no topo antes de qualquer animação do GSAP
+    window.history.scrollRestoration = 'manual';
+    window.scrollTo(0, 0);
+
     const ctx = gsap.context(() => {
       // Navbar scroll effect
       ScrollTrigger.create({
